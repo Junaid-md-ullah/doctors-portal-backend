@@ -4,10 +4,10 @@ const cors=require('cors');
 app.use(cors());
 const bodyParser=require('body-parser');
 const MongoClient = require('mongodb').MongoClient;
-app.use(bodyParser.json())
-const port=4200;
-const dbUser='dbUser';
-const uri = "mongodb+srv://dbUser:DCKephY8SnhN60aP@cluster0-zzeuc.mongodb.net/test?retryWrites=true&w=majority";
+require('dotenv').config();
+const ObjectId =  require('mongodb').ObjectId;
+app.use(bodyParser.json());
+const uri = process.env.DB_PATH;
 let client = new MongoClient(uri, { useNewUrlParser: true });
 
 //database connection
@@ -50,6 +50,33 @@ app.post('/addAppointment',(req,res)=>{
         client.close();
       });
 
+});
+app.post('/updateStatus',(req,res)=>{
+    const update=req.body;
+    console.log(update);
+    const client = new MongoClient(uri, { useNewUrlParser: true });
+    client.connect(err => {
+        const collection = client.db("doctors-portal").collection("appointmentList");
+        // perform actions on the collection object
+        collection.updateOne(
+            {_id:ObjectId(update.id)},
+            {
+                $set: {"status":update.status}
+               
+        },
+        (err,result)=>{
+            if(err){
+                console.log(err)
+            }
+            else{
+                res.send(result);
+                console.log(result)
+            
+        }
+        
+        client.close();
+      });
+    })
 });
 
 app.get('/departs',(req,res)=>{
@@ -108,5 +135,5 @@ app.get('/appointments',(req,res)=>{
 //         client.close();
 //       });
 // })
-
+const port=process.env.PORT || 4200;
 app.listen(port,()=>console.log('listening to port 3000'));
